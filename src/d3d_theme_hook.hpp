@@ -1154,7 +1154,7 @@ inline void HookMultithreadInterface(IUnknown* obj) {
     if (SUCCEEDED(obj->QueryInterface(kIidD3D10Multithread, reinterpret_cast<void**>(&mt))) && mt) {
         void** vtbl = *reinterpret_cast<void***>(mt);
         AcquireSRWLockExclusive(&g_d3dLock);
-        if (vtbl[kIdxMtSetMultithreadProtected] != reinterpret_cast<void*>(&Hooked_SetMultithreadProtected)) {
+        if (g_mtOrigs.find(vtbl) == g_mtOrigs.end()) {
             void* prev = nullptr;
             if (PatchSlot(vtbl, kIdxMtSetMultithreadProtected, reinterpret_cast<void*>(&Hooked_SetMultithreadProtected), prev)) {
                 g_mtOrigs[vtbl] = reinterpret_cast<PFN_SetMultithreadProtected>(prev);
@@ -1165,11 +1165,14 @@ inline void HookMultithreadInterface(IUnknown* obj) {
     }
 }
 
+// Every vtable hook here is installed once per vtable. Another tool (Sunbird's
+// desktop themes) may patch the same slot after us; re-hooking would save its
+// hook as our "original" while it holds ours, and the two would recurse forever.
 inline void HookDeviceVtable(ID3D11Device* dev) {
     if (!dev) return;
     void** vtbl = *reinterpret_cast<void***>(dev);
     AcquireSRWLockExclusive(&g_d3dLock);
-    if (vtbl[kIdxDevCreateBuffer] != reinterpret_cast<void*>(&Hooked_CreateBuffer)) {
+    if (g_devOrigs.find(vtbl) == g_devOrigs.end()) {
         DevOrigVtbl orig{};
         void* p1 = nullptr;
         void* p2 = nullptr;
@@ -1240,7 +1243,7 @@ inline void HookSwapChainVtable(IDXGISwapChain* sc) {
     TrackSwapChainBackBuffer(sc);
     void** vtbl = *reinterpret_cast<void***>(sc);
     AcquireSRWLockExclusive(&g_d3dLock);
-    if (vtbl[kIdxSwapChainPresent] != reinterpret_cast<void*>(&Hooked_SwapChainPresent)) {
+    if (g_presentOrigs.find(vtbl) == g_presentOrigs.end()) {
         void* prev = nullptr;
         if (PatchSlot(vtbl, kIdxSwapChainPresent, reinterpret_cast<void*>(&Hooked_SwapChainPresent), prev)) {
             g_presentOrigs[vtbl] = reinterpret_cast<PFN_SwapChainPresent>(prev);
@@ -1288,7 +1291,7 @@ inline void HookDxgiFactory(IUnknown* unk) {
     if (FAILED(unk->QueryInterface(__uuidof(IDXGIFactory2), reinterpret_cast<void**>(&f2))) || !f2) return;
     void** vtbl = *reinterpret_cast<void***>(f2);
     AcquireSRWLockExclusive(&g_d3dLock);
-    if (vtbl[kIdxFactoryCreateSwapChainForHwnd] != reinterpret_cast<void*>(&Hooked_CreateSwapChainForHwnd)) {
+    if (g_factoryOrigs.find(vtbl) == g_factoryOrigs.end()) {
         FactoryOrigVtbl orig{};
         void* p1 = nullptr;
         void* p2 = nullptr;
