@@ -1,0 +1,67 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and run tests
+        shell: pwsh
+        run: .\build.ps1 -Test
+
+      - name: Package release archive
+        shell: pwsh
+        run: |
+          Remove-Item release -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          Copy-Item dist\phoenix-themes.exe, dist\phoenix-themes.dll, README.md, README.ja.md, LICENSE release\
+          Copy-Item dist\adapters release\adapters -Recurse
+          Copy-Item dist\themes release\themes -Recurse
+          Copy-Item third_party\minhook\LICENSE.txt release\LICENSE-MinHook.txt
+          Compress-Archive -Path release\* -DestinationPath phoenix-themes-windows-x86_64.zip -Force
+          $hash = (Get-FileHash phoenix-themes-windows-x86_64.zip -Algorithm SHA256).Hash.ToLower()
+          [System.IO.File]::WriteAllText("$PWD\SHA256SUMS.txt", "$hash  phoenix-themes-windows-x86_64.zip`n", [System.Text.UTF8Encoding]::new($false))
+          Get-Content SHA256SUMS.txt
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phoenix-themes-windows-x86_64
+          path: |
+            phoenix-themes-windows-x86_64.zip
+            SHA256SUMS.txt
+
+  release:
+    needs: build-windows
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: phoenix-themes-windows-x86_64
+
+      - name: Verify SHA256SUMS
+        run: sha256sum -c SHA256SUMS.txt
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            phoenix-themes-windows-x86_64.zip
+            SHA256SUMS.txt

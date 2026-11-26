@@ -1,0 +1,10 @@
+build/
+dist/
+release/
+release-stage/
+*.zip
+SHA256SUMS.txt
+*.obj
+*.pdb
+*.ilk
+*.log

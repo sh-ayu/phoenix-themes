@@ -1,0 +1,19 @@
+/* @name Dracula
+   @author sh-ayu
+   @description Classic dark vampire palette with crisp purple accents. Save to hot-reload live! */
+
+:root {
+  --bg-tertiary: #191a21;
+  --bg-secondary: #21222c;
+  --bg-primary: #282a36;
+  --bg-elevated: #383a59;
+
+  --accent-color: #bd93f9;
+  --ui-border-color: #44475a;
+
+  --text-normal: #f8f8f2;
+  --text-muted: #8b94bd;
+
+  --radius-scale: 1.0;
+  --override-nitro: true;
+}

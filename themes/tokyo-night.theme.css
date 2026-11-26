@@ -1,0 +1,19 @@
+/* @name Tokyo Night
+   @author sh-ayu
+   @description Deep indigo night palette inspired by Tokyo Night. Save to hot-reload live! */
+
+:root {
+  --bg-tertiary: #16161e;
+  --bg-secondary: #1a1b26;
+  --bg-primary: #1f2335;
+  --bg-elevated: #292e42;
+
+  --accent-color: #7aa2f7;
+  --ui-border-color: #3b4261;
+
+  --text-normal: #c0caf5;
+  --text-muted: #737aa2;
+
+  --radius-scale: 1.0;
+  --override-nitro: true;
+}

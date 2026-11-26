@@ -1,0 +1,19 @@
+/* @name Emerald OLED
+   @author sh-ayu
+   @description True pitch-black OLED surfaces with crisp emerald green accents. Save to hot-reload live! */
+
+:root {
+  --bg-tertiary: #000000;
+  --bg-secondary: #070b09;
+  --bg-primary: #0c120f;
+  --bg-elevated: #16221c;
+
+  --accent-color: #34d399;
+  --ui-border-color: #1f3329;
+
+  --text-normal: #e8fff5;
+  --text-muted: #7aa392;
+
+  --radius-scale: 0.75;
+  --override-nitro: true;
+}

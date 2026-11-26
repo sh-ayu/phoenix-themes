@@ -1,0 +1,19 @@
+/* @name Nord
+   @author sh-ayu
+   @description Arctic, north-bluish clean dark palette. Save to hot-reload live! */
+
+:root {
+  --bg-tertiary: #242933;
+  --bg-secondary: #2e3440;
+  --bg-primary: #3b4252;
+  --bg-elevated: #434c5e;
+
+  --accent-color: #88c0d0;
+  --ui-border-color: #4c566a;
+
+  --text-normal: #eceff4;
+  --text-muted: #a5b1c2;
+
+  --radius-scale: 0.9;
+  --override-nitro: true;
+}

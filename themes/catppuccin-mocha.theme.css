@@ -1,0 +1,19 @@
+/* @name Catppuccin Mocha
+   @author sh-ayu
+   @description Soothing pastel dark theme (Catppuccin Mocha / Mauve accent). Save to hot-reload live! */
+
+:root {
+  --bg-tertiary: #11111b;
+  --bg-secondary: #181825;
+  --bg-primary: #1e1e2e;
+  --bg-elevated: #313244;
+
+  --accent-color: #cba6f7;
+  --ui-border-color: #45475a;
+
+  --text-normal: #cdd6f4;
+  --text-muted: #9399b2;
+
+  --radius-scale: 1.15;
+  --override-nitro: true;
+}

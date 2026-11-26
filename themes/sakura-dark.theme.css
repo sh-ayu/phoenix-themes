@@ -1,0 +1,19 @@
+/* @name Sakura Dark
+   @author sh-ayu
+   @description Warm deep plum surfaces with sakura pink accents. Save to hot-reload live! */
+
+:root {
+  --bg-tertiary: #150e17;
+  --bg-secondary: #1d1421;
+  --bg-primary: #261a2b;
+  --bg-elevated: #36253d;
+
+  --accent-color: #ff79c6;
+  --ui-border-color: #4e3459;
+
+  --text-normal: #fce8f3;
+  --text-muted: #b38ea6;
+
+  --radius-scale: 1.25;
+  --override-nitro: true;
+}
