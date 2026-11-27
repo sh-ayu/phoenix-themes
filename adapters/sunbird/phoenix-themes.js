@@ -1,5 +1,5 @@
 // @description Live .theme.css engine, custom wallpapers, custom fonts (.ttf/.otf), and window tweaks for Discord Phoenix (thin Sunbird UI adapter for phoenix-themes).
-// @version 0.1.1
+// @version 0.1.2
 // @author sh-ayu
 
 const readOr = (key, fallback) => {

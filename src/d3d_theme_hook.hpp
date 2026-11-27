@@ -441,16 +441,17 @@ inline void TransformBufferData(BufferKind kind, uint8_t* data, UINT byteSize,
                                       (w >= 200.0f && h >= 28.0f);
 
             phoenix_theme::QuadRole role = phoenix_theme::QuadRole::Default;
-            bool isModalScrim = false;
+            bool isLateFullWindow = false;
             if (vpW >= 400.0f && vpH >= 300.0f) {
                 if (w >= vpW * 0.85f && h >= vpH * 0.85f) {
-                    // Only early window-root backgrounds (i < 8) are FullWindowRoot.
-                    // Later full-screen quads (i >= 8) are modal/lightbox/settings dimming scrims —
-                    // preserve their dark scrim alpha so opened images & settings stay visually focused!
+                    // Early window-sized quads (i < 8) are the window's own background. A later one
+                    // is either the dark scrim behind a modal or an image viewer, which must keep its
+                    // dimming, or a colored layer such as a Nitro client theme's gradient, which is
+                    // recolored like any other quad. Only the color tells them apart (see below).
                     if (i < 8) {
                         role = phoenix_theme::QuadRole::FullWindowRoot;
                     } else {
-                        isModalScrim = true;
+                        isLateFullWindow = true;
                     }
                 } else if (x <= 12.0f && w >= 44.0f && w <= 96.0f && h >= vpH * 0.50f) {
                     role = phoenix_theme::QuadRole::ServerRail;
@@ -461,6 +462,22 @@ inline void TransformBufferData(BufferKind kind, uint8_t* data, UINT byteSize,
                     role = phoenix_theme::QuadRole::HeaderBar;
                 } else if (w >= vpW * 0.45f && h >= vpH * 0.45f) {
                     role = phoenix_theme::QuadRole::MainPane;
+                }
+            }
+            uint32_t tag = 0;
+            memcpy(&tag, q + ql.offBgTag, sizeof(tag));
+            if (isLateFullWindow) {
+                // Anything but a dark scrim is part of the window's background, so a wallpaper
+                // shows through it the same way.
+                bool darkScrim = false;
+                if (tag == 0) {
+                    phoenix_theme::Hsla solid{};
+                    memcpy(&solid, q + ql.offBgSolid, sizeof(solid));
+                    darkScrim = solid.a < 0.96f && solid.l <= 0.15f;
+                }
+                if (!darkScrim) {
+                    role = phoenix_theme::QuadRole::FullWindowRoot;
+                    isLateFullWindow = false;
                 }
             }
             const bool isFullWindowRoot = (role == phoenix_theme::QuadRole::FullWindowRoot);
@@ -483,17 +500,14 @@ inline void TransformBufferData(BufferKind kind, uint8_t* data, UINT byteSize,
                 }
             }
 
-            uint32_t tag = 0;
-            memcpy(&tag, q + ql.offBgTag, sizeof(tag));
-
             if (tag == 0) {
                 phoenix_theme::Hsla solid{};
                 memcpy(&solid, q + ql.offBgSolid, sizeof(solid));
                 if (solid.a > 0.005f && solid.a <= 1.001f) {
-                    // Also treat semi-transparent full-screen overlays (e.g., lightbox/settings backdrop scrims)
-                    // as modal scrims regardless of slot index so their dimming stays intact.
-                    const bool effectiveFullRoot = isFullWindowRoot && (solid.a >= 0.96f);
-                    const bool effectiveModalScrim = isModalScrim || (isFullWindowRoot && solid.a < 0.96f);
+                    // A scrim is a dark, translucent solid; Discord's are near-black.
+                    const bool darkTranslucent = solid.a < 0.96f && solid.l <= 0.15f;
+                    const bool effectiveModalScrim = (isLateFullWindow || isFullWindowRoot) && darkTranslucent;
+                    const bool effectiveFullRoot = isFullWindowRoot && !effectiveModalScrim;
                     if (effectiveModalScrim) {
                         touched++;
                         continue;
@@ -535,10 +549,6 @@ inline void TransformBufferData(BufferKind kind, uint8_t* data, UINT byteSize,
                     touched++;
                 }
             } else if (tag == 1 && hasGradientColors) {
-                if (isModalScrim) {
-                    touched++;
-                    continue;
-                }
                 const bool isHugeGradient = (w >= 200.0f && h >= 100.0f) || (role != phoenix_theme::QuadRole::Default);
                 phoenix_theme::Hsla c0{}, c1{};
                 memcpy(&c0, q + ql.offBgColor0, sizeof(c0));
